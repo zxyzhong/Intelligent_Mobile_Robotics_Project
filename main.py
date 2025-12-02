@@ -1,4 +1,5 @@
 from flight_environment import FlightEnvironment
+from path_planner import AStarPlanner
 
 env = FlightEnvironment(50)
 start = (1,2,0)
@@ -13,12 +14,20 @@ goal = (18,18,3)
 #   - column 3 contains the z-coordinates of all path points
 # This `path` array will be provided to the `env` object for visualization.
 
-path = [[0,0,0],[1,1,1],[2,2,2],[3,3,3]]
+# Create A* planner and find path
+planner = AStarPlanner(env, resolution=0.5)
+path = planner.plan(start, goal)
+
+# print(f"Path found with {len(path)} waypoints")
+
+# print("Path waypoints:")
+# for waypoint in path:
+#     print(waypoint)
 
 # --------------------------------------------------------------------------------------------------- #
 
 
-env.plot_cylinders(path)
+# env.plot_cylinders(path)
 
 
 # --------------------------------------------------------------------------------------------------- #

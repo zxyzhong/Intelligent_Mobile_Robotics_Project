@@ -18,6 +18,13 @@ import heapq
 class AStarPlanner:
     """
     A* path planning algorithm for 3D environment with cylindrical obstacles.
+    
+    The algorithm uses a grid-based representation and searches for the optimal path
+    from start to goal by minimizing f(n) = g(n) + h(n), where:
+    - g(n): actual cost from start to node n
+    - h(n): heuristic estimate of cost from node n to goal (Euclidean distance)
+    
+    The implementation uses 26-connectivity (allows diagonal movements in 3D).
     """
     
     def __init__(self, env, resolution=0.5):
@@ -165,51 +172,9 @@ class AStarPlanner:
         
         path.reverse()
         
-        # Smooth the path by removing redundant waypoints
-        path = self._smooth_path(path)
-        
         return np.array(path)
     
-    def _smooth_path(self, path):
-        """
-        Smooth path by removing intermediate points on straight lines.
-        Uses line-of-sight checking.
-        """
-        if len(path) <= 2:
-            return path
-        
-        smoothed = [path[0]]
-        current_idx = 0
-        
-        while current_idx < len(path) - 1:
-            # Try to connect to farthest visible point
-            for next_idx in range(len(path) - 1, current_idx, -1):
-                if self._is_line_collision_free(path[current_idx], path[next_idx]):
-                    smoothed.append(path[next_idx])
-                    current_idx = next_idx
-                    break
-            else:
-                # If no point is visible, move to next point
-                current_idx += 1
-                if current_idx < len(path):
-                    smoothed.append(path[current_idx])
-        
-        return smoothed
-    
-    def _is_line_collision_free(self, p1, p2, num_checks=20):
-        """
-        Check if the straight line between p1 and p2 is collision-free.
-        """
-        for i in range(num_checks + 1):
-            t = i / num_checks
-            point = (
-                p1[0] + t * (p2[0] - p1[0]),
-                p1[1] + t * (p2[1] - p1[1]),
-                p1[2] + t * (p2[2] - p1[2])
-            )
-            if self.env.is_outside(point) or self.env.is_collide(point):
-                return False
-        return True
+
             
 
 

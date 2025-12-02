@@ -109,9 +109,13 @@ class FlightEnvironment:
             
             return False
     
-    def plot_cylinders(self,path = None):
+    def plot_cylinders(self, path=None, remote=False):
         """
-        cylinders: N×4 array, [cx, cy, h, r]
+        Plot cylinders and path in 3D.
+        
+        Parameters:
+            path: N×3 array of path waypoints
+            remote: If True, save to file; if False, show plot
         """
 
         fig = plt.figure()
@@ -146,11 +150,89 @@ class FlightEnvironment:
         if path is not None:
             path = np.array(path)
             xs, ys, zs = path[:, 0], path[:, 1], path[:, 2]
-            ax.plot(xs, ys, zs, linewidth=2)     
-            ax.scatter(xs[0], ys[0], zs[0], s=40) 
-            ax.scatter(xs[-1], ys[-1], zs[-1], s=40) 
+            ax.plot(xs, ys, zs, 'r-', linewidth=2, label='Path')     
+            ax.scatter(xs[0], ys[0], zs[0], color='green', s=100, marker='o', label='Start') 
+            ax.scatter(xs[-1], ys[-1], zs[-1], color='red', s=100, marker='*', label='Goal')
+        
+        ax.set_xlabel('X (m)')
+        ax.set_ylabel('Y (m)')
+        ax.set_zlabel('Z (m)')
+        ax.legend()
         self.set_axes_equal(ax)
-        plt.show()
+        
+        if remote:
+            plt.savefig('path_3d.png', dpi=300, bbox_inches='tight')
+            print("Path visualization saved as 'path_3d.png'")
+            plt.close()
+        else:
+            plt.show()
+    
+    def plot_trajectory_3d(self, path, trajectory, remote=False):
+        """
+        Plot both the discrete path and continuous trajectory in 3D environment.
+        
+        Parameters:
+            path: N×3 array of discrete waypoints
+            trajectory: M×3 array of continuous trajectory points
+            remote: If True, save to file; if False, show plot
+        """
+        fig = plt.figure(figsize=(12, 10))
+        ax = fig.add_subplot(111, projection='3d')
+
+        cylinders = self.cylinders
+        space_size = self.space_size
+
+        # Plot obstacles
+        Xmax, Ymax, Zmax = space_size
+        for cx, cy, h, r in cylinders:
+            z = np.linspace(0, h, 30)
+            theta = np.linspace(0, 2 * np.pi, 30)
+            theta, z = np.meshgrid(theta, z)
+
+            x = cx + r * np.cos(theta)
+            y = cy + r * np.sin(theta)
+
+            ax.plot_surface(x, y, z, color='skyblue', alpha=0.6)
+            theta2 = np.linspace(0, 2*np.pi, 30)
+            x_top = cx + r * np.cos(theta2)
+            y_top = cy + r * np.sin(theta2)
+            z_top = np.ones_like(theta2) * h
+            ax.plot_trisurf(x_top, y_top, z_top, color='steelblue', alpha=0.6)
+
+        ax.set_xlim(0, self.env_width)
+        ax.set_ylim(0, self.env_length)
+        ax.set_zlim(0, self.env_height)
+
+        # Plot discrete path waypoints
+        if path is not None:
+            path = np.array(path)
+            xs, ys, zs = path[:, 0], path[:, 1], path[:, 2]
+            ax.scatter(xs, ys, zs, color='black', s=60, marker='o', 
+                      label='Waypoints', zorder=5)
+            ax.scatter(xs[0], ys[0], zs[0], color='green', s=150, 
+                      marker='o', label='Start', zorder=6)
+            ax.scatter(xs[-1], ys[-1], zs[-1], color='red', s=150, 
+                      marker='*', label='Goal', zorder=6)
+        
+        # Plot continuous trajectory
+        if trajectory is not None:
+            trajectory = np.array(trajectory)
+            tx, ty, tz = trajectory[:, 0], trajectory[:, 1], trajectory[:, 2]
+            ax.plot(tx, ty, tz, 'b-', linewidth=2.5, alpha=0.8, label='Trajectory')
+        
+        ax.set_xlabel('X (m)', fontsize=11)
+        ax.set_ylabel('Y (m)', fontsize=11)
+        ax.set_zlabel('Z (m)', fontsize=11)
+        ax.set_title('3D Path and Trajectory Visualization', fontsize=14, fontweight='bold')
+        ax.legend(fontsize=10)
+        self.set_axes_equal(ax)
+        
+        if remote:
+            plt.savefig('trajectory_3d.png', dpi=300, bbox_inches='tight')
+            print("3D trajectory visualization saved as 'trajectory_3d.png'")
+            plt.close()
+        else:
+            plt.show()
 
 
     def set_axes_equal(self,ax):

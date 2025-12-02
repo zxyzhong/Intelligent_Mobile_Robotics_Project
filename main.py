@@ -1,5 +1,16 @@
 from flight_environment import FlightEnvironment
 from path_planner import AStarPlanner
+import numpy as np
+import argparse
+
+# Parse command line arguments
+parser = argparse.ArgumentParser(description='UAV Path Planning and Trajectory Generation')
+parser.add_argument('--remote', action='store_true', 
+                    help='Save plots to files instead of showing them (for remote environments)')
+args = parser.parse_args()
+
+# Set random seed for reproducibility
+np.random.seed(42)
 
 env = FlightEnvironment(50)
 start = (1,2,0)
@@ -18,16 +29,12 @@ goal = (18,18,3)
 planner = AStarPlanner(env, resolution=0.5)
 path = planner.plan(start, goal)
 
-# print(f"Path found with {len(path)} waypoints")
-
-# print("Path waypoints:")
-# for waypoint in path:
-#     print(waypoint)
+print(f"Path found with {len(path)} waypoints")
 
 # --------------------------------------------------------------------------------------------------- #
 
 
-# env.plot_cylinders(path)
+env.plot_cylinders(path, remote=args.remote)
 
 
 # --------------------------------------------------------------------------------------------------- #
@@ -43,8 +50,19 @@ path = planner.plan(start, goal)
 #   points on the same figure to clearly show how the continuous trajectory
 #   follows these path points.
 
+from trajectory_generator import PolynomialTrajectory
 
+# Generate smooth trajectory through waypoints
+traj_gen = PolynomialTrajectory(path, velocity=2.0)
+t, trajectory = traj_gen.generate()
 
+print(f"Trajectory generated with {len(trajectory)} time steps over {t[-1]:.2f} seconds")
+
+# Plot trajectory with waypoints (time domain)
+traj_gen.plot_trajectory(show_waypoints=True, remote=args.remote)
+
+# Plot 3D visualization with both path and trajectory
+env.plot_trajectory_3d(path, trajectory, remote=args.remote)
 
 # --------------------------------------------------------------------------------------------------- #
 

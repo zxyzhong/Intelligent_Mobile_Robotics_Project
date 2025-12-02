@@ -122,6 +122,9 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
+# Generated output images
+*.png
+
 # IDE - VSCode
 .vscode/
 *.code-workspace

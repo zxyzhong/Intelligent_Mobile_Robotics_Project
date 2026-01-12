@@ -62,7 +62,7 @@ print(f"Trajectory generated with {len(trajectory)} time steps over {t[-1]:.2f} 
 traj_gen.plot_trajectory(show_waypoints=True, remote=args.remote)
 
 # Plot 3D visualization with both path and trajectory
-env.plot_trajectory_3d(path, trajectory, remote=args.remote)
+# env.plot_trajectory_3d(path, trajectory, remote=args.remote)
 
 # --------------------------------------------------------------------------------------------------- #
 
